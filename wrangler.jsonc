@@ -1,5 +1,5 @@
 {
-  "name": "readme-worker",
+  "name": "readme",
   "compatibility_date": "2026-01-14",
   "main": "worker.js"
 }
