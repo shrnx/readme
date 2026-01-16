@@ -747,7 +747,10 @@ return `
             contents.forEach(c => c.classList.remove('active'));
 
             event.target.classList.add('active');
-            document.getElementById(`tab-${tab}-${id}`).classList.add('active');
+            document
+              .getElementById('tab-' + tab + '-' + id)
+              .classList.add('active');
+
         }
 
         async function sendCmd(id) {
