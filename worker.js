@@ -171,7 +171,7 @@ return new Response('Not Found', { status: 404 });
 };
 
 function getAdminHTML() {
-return `
+return 
 <!DOCTYPE html>
 <html>
 
