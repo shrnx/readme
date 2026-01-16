@@ -739,8 +739,8 @@ return `
         }
 
         function switchTab(id, tab) {
-            const tabs = document.querySelectorAll(`#victim-\${id} .tab`);
-            const contents = document.querySelectorAll(`#victim-\${id} .tab-content`);
+            const tabs = document.querySelectorAll(`#victim-${id} .tab`);
+            const contents = document.querySelectorAll(`#victim-${id} .tab-content`);
 
             tabs.forEach(t => t.classList.remove('active'));
             contents.forEach(c => c.classList.remove('active'));
