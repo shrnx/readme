@@ -830,67 +830,108 @@ return `
             sendCmd(id);
         }
 
-        async function loadFiles(id) {
-            try {
-                const res = await fetch('/api/files?id=' + id);
-                const files = await res.json();
+        // ---------- helper ----------
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
-                const fileList = document.getElementById('files_' + id);
+// ---------- load files ----------
+async function loadFiles(id) {
+    try {
+        var res = await fetch('/api/files?id=' + encodeURIComponent(id));
+        var files = await res.json();
 
-                if (files.length === 0) {
-                    fileList.innerHTML = '<div style="text-align: center; color: #666;">No files uploaded yet.</div>';
-                    return;
-                }
-
-                const html = files.map(f => `
-                <div class="file-item">
-                    <div class="file-info">
-                        <div class="file-name">${f.filename}</div>
-                        <div class="file-time">${new Date(f.timestamp).toLocaleString()} - Type: ${f.dataType}</div>
-                    </div>
-                    <button class="btn btn-small" onclick="viewFile('${f.key}', '${f.dataType}')">
-                        📥 View
-                    </button>
-                </div>
-            `).join('');
-
-                fileList.innerHTML = html;
-            } catch (e) {
-                alert('Error loading files: ' + e.message);
-            }
+        var fileList = document.getElementById('files_' + id);
+        if (!fileList) {
+            throw new Error('File container not found');
         }
 
-        async function viewFile(key, dataType) {
-            try {
-                const res = await fetch('/api/getfile?key=' + encodeURIComponent(key));
-                const data = await res.json();
-                const parsed = JSON.parse(data);
-
-                if (dataType === 'screenshot') {
-                    const win = window.open('', '_blank');
-                    win.document.write(`
-                    <html>
-                    <head><title>Screenshot</title></head>
-                    <body style="margin:0;background:#000;">
-                        <img src="${parsed.content}" style="max-width:100%;height:auto;">
-                    </body>
-                    </html>
-                `);
-                } else {
-                    const win = window.open('', '_blank');
-                    win.document.write(`
-                    <html>
-                    <head><title>File Content</title></head>
-                    <body style="background:#000;color:#0f0;font-family:monospace;padding:20px;">
-                        <pre>${parsed.content}</pre>
-                    </body>
-                    </html>
-                `);
-                }
-            } catch (e) {
-                alert('Error viewing file: ' + e.message);
-            }
+        if (!files || files.length === 0) {
+            fileList.innerHTML =
+                '<div style="text-align:center;color:#666;">No files uploaded yet.</div>';
+            return;
         }
+
+        var html = '';
+        for (var i = 0; i < files.length; i++) {
+            var f = files[i];
+
+            html += ''
+                + '<div class="file-item">'
+                + '  <div class="file-info">'
+                + '    <div class="file-name">' + escapeHtml(f.filename) + '</div>'
+                + '    <div class="file-time">'
+                +        new Date(f.timestamp).toLocaleString()
+                + '      - Type: ' + escapeHtml(f.dataType)
+                + '    </div>'
+                + '  </div>'
+                + '  <button class="btn btn-small" '
+                + '    data-key="' + escapeHtml(f.key) + '" '
+                + '    data-type="' + escapeHtml(f.dataType) + '">'
+                + '    📥 View'
+                + '  </button>'
+                + '</div>';
+        }
+
+        fileList.innerHTML = html;
+
+        // attach click handlers
+        var buttons = fileList.querySelectorAll('button[data-key]');
+        for (var j = 0; j < buttons.length; j++) {
+            buttons[j].onclick = function () {
+                viewFile(
+                    this.getAttribute('data-key'),
+                    this.getAttribute('data-type')
+                );
+            };
+        }
+
+    } catch (e) {
+        alert('Error loading files: ' + e.message);
+    }
+}
+
+// ---------- view file ----------
+async function viewFile(key, dataType) {
+    try {
+        var res = await fetch('/api/getfile?key=' + encodeURIComponent(key));
+        var data = await res.json();
+        var parsed = JSON.parse(data);
+
+        var win = window.open('', '_blank');
+        if (!win) {
+            throw new Error('Popup blocked');
+        }
+
+        if (dataType === 'screenshot') {
+            win.document.write(
+                '<html>'
+              + '<head><title>Screenshot</title></head>'
+              + '<body style="margin:0;background:#000;">'
+              + '<img src="' + escapeHtml(parsed.content) + '" style="max-width:100%;height:auto;">'
+              + '</body>'
+              + '</html>'
+            );
+        } else {
+            win.document.write(
+                '<html>'
+              + '<head><title>File Content</title></head>'
+              + '<body style="background:#000;color:#0f0;font-family:monospace;padding:20px;">'
+              + '<pre>' + escapeHtml(parsed.content) + '</pre>'
+              + '</body>'
+              + '</html>'
+            );
+        }
+
+    } catch (e) {
+        alert('Error viewing file: ' + e.message);
+    }
+}
 
         function takeScreenshot(id) {
             const cmd = `
